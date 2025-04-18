@@ -1,14 +1,9 @@
+import argparse
+from collections import defaultdict
+from urllib.parse import urlparse
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
-from collections import defaultdict
-import argparse
-
-
-"""Сбор статистики обработанных страниц для Веб 1.0: общее количество страниц и всех ссылок, 
-количество внутренних страниц, количество неработающих страниц, количество внутренних поддоменов, 
-общее количество ссылок на внешние ресурсы, количество уникальных внешних ресурсов, 
-количество уникальных ссылок на файлы doc/docx/pdf. """
 
 
 class WebCrawler:
@@ -25,14 +20,14 @@ class WebCrawler:
         self.external_links = set()
         self.file_types = ['.pdf', '.doc', '.docx']
         self.stats = {
-            'total_pages': 0, # страницы без повторов
-            'total_links': 0, # все ссылки с повторами +
-            'total_internal_pages': 0, # количество внутренних страниц без повторов
-            'total_broken_links': 0, # количество страниц с 400 +
-            'total_subdomains': 0, # количество поддоменов без повторов
-            'total_external_links': 0, # количество ссылок на внешние ресурсы без повторов
-            'total_unique_external_resources': 0, # количество уникальных внешних доменов без повторов
-            'total_unique_file_links': defaultdict(int)
+            'total_pages': 0,  # страницы без повторов
+            'total_links': 0,  # все ссылки с повторами
+            'total_internal_pages': 0,  # количество внутренних страниц без повторов
+            'total_broken_links': 0,  # количество сломанных страниц
+            'total_subdomains': 0,  # количество поддоменов без повторов
+            'total_external_links': 0,  # количество ссылок на внешние ресурсы без повторов
+            'total_unique_external_resources': 0,  # количество уникальных внешних доменов без повторов
+            'total_unique_file_links': defaultdict(int)  # количество документов
         }
 
     def is_internal_netloc(self, netloc: str):
@@ -63,6 +58,7 @@ class WebCrawler:
         self.stats['total_unique_external_resources'] = len(self.external_resources)
         self.stats['total_internal_pages'] = len(self.internal_pages)
         self.stats['total_external_links'] = len(self.external_links)
+
     def crawl(self, max_pages: int = 100):
         while self.to_visit and len(self.visited) < max_pages:
             url = self.to_visit.pop()
@@ -83,29 +79,33 @@ class WebCrawler:
         self.update_stats()
 
     def print_stats(self):
-        print('total_pages: ', self.stats['total_pages'])  # страницы без повторов
-        print('total_links: ', self.stats['total_links'])  # все ссылки с повторами +
-        print('total_internal_pages: ', self.stats['total_internal_pages'])  # количество внутренних страниц без повторов
-        print('total_broken_links: ', self.stats['total_broken_links'])  # количество страниц с 400 +
-        print('total_subdomains: ', self.stats['total_subdomains'])  # количество поддоменов без повторов
-        print('total_external_links: ', self.stats['total_external_links'])  # количество ссылок на внешние ресурсы без повторов
-        print('total_unique_external_resources: ', self.stats['total_unique_external_resources'])  # количество уникальных внешних доменов без повторов
+        print('total_pages: ', self.stats['total_pages'])
+        print('total_links: ', self.stats['total_links'])
+        print('total_internal_pages: ',
+              self.stats['total_internal_pages'])
+        print('total_broken_links: ', self.stats['total_broken_links'])
+        print('total_subdomains: ', self.stats['total_subdomains'])
+        print('total_external_links: ',
+              self.stats['total_external_links'])
+        print('total_unique_external_resources: ',
+              self.stats['total_unique_external_resources'])
         print('total_unique_file_links: ', self.stats['total_unique_file_links'])
         print('total_files')
         for ext, count in self.stats['total_unique_file_links'].items():
             print(f"  {ext}: {count}")
 
-def main(link):
+
+def main(link, deep):
     wc = WebCrawler(link)
-    wc.crawl(max_pages=10)
+    wc.crawl(max_pages=deep)
     wc.print_stats()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='WebCrawler')
 
-    parser.add_argument('link', help='Site link')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Увеличить детализацию вывода')
+    parser.add_argument('link', nargs='?', help='Site link', default='https://spbu.ru/')
+    parser.add_argument('--deep', help='Search deep', default='10')
 
     args = parser.parse_args()
-    main(args.link)
+    main(args.link, args.deep)
