@@ -1,9 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
-import re
 from collections import defaultdict
-import time
 
 """Сбор статистики обработанных страниц для Веб 1.0: общее количество страниц и всех ссылок, 
 количество внутренних страниц, количество неработающих страниц, количество внутренних поддоменов, 
