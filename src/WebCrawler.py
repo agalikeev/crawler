@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from collections import defaultdict
+import argparse
+
 
 """Сбор статистики обработанных страниц для Веб 1.0: общее количество страниц и всех ссылок, 
 количество внутренних страниц, количество неработающих страниц, количество внутренних поддоменов, 
@@ -93,6 +95,17 @@ class WebCrawler:
         for ext, count in self.stats['total_unique_file_links'].items():
             print(f"  {ext}: {count}")
 
-wc = WebCrawler('https://spbu.ru/')
+def main(link):
+    wc = WebCrawler(link)
+    wc.crawl(max_pages=10)
+    wc.print_stats()
 
-print(wc.crawl(max_pages=25))
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='WebCrawler')
+
+    parser.add_argument('link', help='Site link')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Увеличить детализацию вывода')
+
+    args = parser.parse_args()
+    main(args.link)
