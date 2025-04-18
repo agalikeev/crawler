@@ -25,7 +25,7 @@ class WebCrawler:
             'total_internal_pages': 0,  # количество внутренних страниц без повторов
             'total_broken_links': 0,  # количество сломанных страниц
             'total_subdomains': 0,  # количество поддоменов без повторов
-            'total_external_links': 0,  # количество ссылок на внешние ресурсы без повторов
+            'total_external_links': 0,  # количество ссылок на внешние ресурсы с повторами
             'total_unique_external_resources': 0,  # количество уникальных внешних доменов без повторов
             'total_unique_file_links': defaultdict(int)  # количество документов
         }
@@ -46,7 +46,7 @@ class WebCrawler:
             self.subdomains.add(netloc)
         else:
             self.external_resources.add(netloc)
-            self.external_links.add(link)
+            self.stats['total_external_links'] += 1
 
         if self.is_file_link(link):
             ext = link.split('.')[-1].lower()
@@ -57,7 +57,6 @@ class WebCrawler:
         self.stats['total_pages'] = len(self.visited)
         self.stats['total_unique_external_resources'] = len(self.external_resources)
         self.stats['total_internal_pages'] = len(self.internal_pages)
-        self.stats['total_external_links'] = len(self.external_links)
 
     def crawl(self, max_pages: int = 100):
         while self.to_visit and len(self.visited) < max_pages:
