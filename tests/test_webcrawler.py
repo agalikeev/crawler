@@ -1,6 +1,7 @@
-import pytest
-from src.WebCrawler import WebCrawler
 import requests
+
+from src.WebCrawler import WebCrawler
+
 
 def test_base_url_initialization(requests_mock):
     """Тест инициализации базового URL"""
@@ -8,6 +9,7 @@ def test_base_url_initialization(requests_mock):
     crawler = WebCrawler("http://test.com")
     assert crawler.base_url == "http://test.com"
     assert crawler.base_domain == "test.com"
+
 
 def test_internal_link_index(requests_mock):
     """Тест обработки внутренних ссылок когда их нет"""
@@ -18,6 +20,7 @@ def test_internal_link_index(requests_mock):
     
     # assert "http://test.com" in crawler.internal_pages
     assert crawler.stats['total_internal_pages'] == 0
+
 
 def test_internal_link_parsing(requests_mock):
     """Тест обработки внутренних ссылок"""
@@ -30,6 +33,7 @@ def test_internal_link_parsing(requests_mock):
     assert "http://test.com/page1" in crawler.internal_pages
     assert crawler.stats['total_internal_pages'] == 1
 
+
 def test_external_link_detection(requests_mock):
     """Тест обнаружения внешних ссылок"""
     requests_mock.get("http://test.com", text="<a href='http://external.com'>External</a>")
@@ -39,6 +43,7 @@ def test_external_link_detection(requests_mock):
     
     assert "external.com" in crawler.external_resources
     assert crawler.stats['total_external_links'] == 1
+
 
 def test_file_link_detection(requests_mock):
     """Тест обнаружения файловых ссылок"""
@@ -50,6 +55,7 @@ def test_file_link_detection(requests_mock):
     assert crawler.stats['total_unique_file_links']['.pdf'] == 1
     assert "/doc.pdf" in crawler.found_files['.pdf'][0]
 
+
 def test_broken_link_handling(requests_mock):
     """Тест обработки битых ссылок"""
     requests_mock.get("http://test.com", status_code=404)
@@ -59,6 +65,7 @@ def test_broken_link_handling(requests_mock):
     
     assert crawler.stats['total_broken_links'] == 1
     assert len(crawler.visited) == 0
+
 
 def test_subdomain_detection(requests_mock):
     """Тест обнаружения поддоменов"""
@@ -71,6 +78,7 @@ def test_subdomain_detection(requests_mock):
     assert "sub.test.com" in crawler.subdomains
     assert crawler.stats['total_subdomains'] == 1
 
+
 def test_max_pages_limit(requests_mock):
     """Тест ограничения по количеству страниц"""
     base_url = "http://test.com"
@@ -81,6 +89,7 @@ def test_max_pages_limit(requests_mock):
     crawler.crawl(max_pages=1)
     
     assert len(crawler.visited) == 1  # Только главная страница
+
 
 def test_redirect_handling(requests_mock):
     """Тест обработки редиректов"""
@@ -96,7 +105,6 @@ def test_redirect_handling(requests_mock):
     
     crawler = WebCrawler(base_url)
     crawler.crawl(max_pages=2)
-    
     
     assert "http://test.com/target" in crawler.visited
    
@@ -121,6 +129,7 @@ def test_stats_calculation(requests_mock):
     assert crawler.stats['total_external_links'] == 1
     assert crawler.stats['total_unique_file_links']['.pdf'] == 1
 
+
 def test_empty_page_handling(requests_mock):
     """Тест обработки пустой страницы"""
     requests_mock.get("http://test.com", text="<html></html>")
@@ -131,16 +140,18 @@ def test_empty_page_handling(requests_mock):
     assert crawler.stats['total_links'] == 0
     assert len(crawler.visited) == 1
 
+
 def test_duplicate_links_handling(requests_mock):
     """Тест обработки дублирующихся ссылок"""
-    requests_mock.get("http://test.com", text="<a href='/page1'>Link</a><a href='/page1'>Link</a>")
+    requests_mock.get("http://test.com",
+                       text="<a href='/page1'>Link</a><a href='/page1'>Link</a>")
     requests_mock.get("http://test.com/page1", text="OK")
     
     crawler = WebCrawler("http://test.com")
     crawler.crawl(max_pages=2)
     
     assert crawler.stats['total_links'] == 2 
-    assert crawler.stats['total_internal_pages'] == 1 # только одна внутренняя(без повтора) 
+    assert crawler.stats['total_internal_pages'] == 1  # только одна внутренняя(без повтора) 
 
 
 def test_relative_links_without_slash(requests_mock):
@@ -153,6 +164,7 @@ def test_relative_links_without_slash(requests_mock):
     
     assert "http://test.com/page1" in crawler.internal_pages
 
+
 def test_links_with_query_params(requests_mock):
     """Тест обработки ссылок с параметрами запроса"""
     requests_mock.get("http://test.com", text="<a href='/page?param=value'>Link</a>")
@@ -162,6 +174,7 @@ def test_links_with_query_params(requests_mock):
     crawler.crawl(max_pages=2)
     
     assert "http://test.com/page?param=value" in crawler.internal_pages
+
 
 def test_different_schemes_handling(requests_mock):
     """Тест обработки ссылок с разными схемами (http/https)"""
@@ -173,6 +186,7 @@ def test_different_schemes_handling(requests_mock):
     
     assert "https://test.com/secure" in crawler.internal_pages
 
+
 def test_cyclic_links_handling(requests_mock):
     """Тест обработки циклических ссылок"""
     requests_mock.get("http://test.com", text="<a href='/page1'>Link</a>")
@@ -182,6 +196,7 @@ def test_cyclic_links_handling(requests_mock):
     crawler.crawl(max_pages=3)
 
     assert len(crawler.visited) == 2 
+
 
 def test_links_in_different_tags(requests_mock):
     """Тест обработки ссылок в разных HTML-тегах"""
@@ -199,16 +214,19 @@ def test_links_in_different_tags(requests_mock):
     
     assert crawler.stats['total_links'] == 4
 
+
 def test_encoding_handling(requests_mock):
     """Тест обработки страниц с разными кодировками(windows-1251)"""
-    requests_mock.get("http://test.com", content="<a href='/page1'>Ссылка</a>".encode('windows-1251'),
-                     headers={'Content-Type': 'text/html; charset=windows-1251'})
+    requests_mock.get("http://test.com",
+                       content="<a href='/page1'>Ссылка</a>".encode('windows-1251'),
+                        headers={'Content-Type': 'text/html; charset=windows-1251'})
     requests_mock.get("http://test.com/page1", text="OK")
     
     crawler = WebCrawler("http://test.com")
     crawler.crawl(max_pages=2)
     
     assert "http://test.com/page1" in crawler.internal_pages
+
 
 def test_wrong_file(requests_mock):
     """Тест неправильного файла(не pdf, doc, docx). Не должно учитываться"""
@@ -229,6 +247,7 @@ def test_wrong_file(requests_mock):
     assert crawler.stats['total_unique_file_links']['.docx'] == 1
     assert '.txt' not in crawler.stats['total_unique_file_links']  # TXT не должен учитываться
    
+
 def test_wrong_url(requests_mock):
     """Тест неправильного URL"""
     requests_mock.get("http://test.com", text="<html> <h1> hello </h1> </html>")
@@ -239,6 +258,7 @@ def test_wrong_url(requests_mock):
 
     assert crawler.stats["total_broken_links"] == 1
 
+
 def test_excessive_max_pages(requests_mock):
     """проход с излишним количеством страниц"""
     requests_mock.get("http://test.com", text="<a href='/page1'>Link</a>")
@@ -246,16 +266,19 @@ def test_excessive_max_pages(requests_mock):
     crawler = WebCrawler("http://test.com")
     crawler.crawl(max_pages=100_000)
 
-    assert crawler.stats["total_internal_pages"] == 1 # не должно ломаться
+    assert crawler.stats["total_internal_pages"] == 1  # не должно ломаться
+
 
 def test_invalid_html_handling(requests_mock):
     """Тест обработки некорректного HTML"""
-    requests_mock.get("http://test.com", text="<html> <a href='/page1'>Link </html>")  # Незакрытый тег
+    requests_mock.get("http://test.com",
+                       text="<html> <a href='/page1'>Link </html>")  # Незакрытый тег
     
     crawler = WebCrawler("http://test.com")
     crawler.crawl(max_pages=1)
     
     assert crawler.stats['total_links'] == 1
+
 
 def test_connection_timeout(requests_mock):
     """Тест обработки таймаута соединения"""
@@ -264,18 +287,21 @@ def test_connection_timeout(requests_mock):
     crawler = WebCrawler("http://test.com")
     crawler.crawl(max_pages=1)
     
-    assert crawler.stats['total_broken_links'] == 1 # засчиталась как битая
-    assert len(crawler.visited) == 0 # но не засчиталась как посещенная
+    assert crawler.stats['total_broken_links'] == 1  # засчиталась как битая
+    assert len(crawler.visited) == 0  # но не засчиталась как посещенная
    
+
 def test_mailto_links_handling(requests_mock):
     """Тест обработки mailto ссылок"""
-    requests_mock.get("http://test.com", text="<a href='mailto:test@example.com'>Email</a>")
+    requests_mock.get("http://test.com",
+                       text="<a href='mailto:test@example.com'>Email</a>")
     
     crawler = WebCrawler("http://test.com")
     crawler.crawl(max_pages=1)
     
     assert crawler.stats['total_links'] == 1
-    assert len(crawler.external_resources) == 0  # mailto не считается внешним ресурсом
+    assert len(crawler.external_resources) == 0  # mailto не внешним ресурсом
+
 
 # TODO: почему total_links == 0 
 def test_empty_links_handling(requests_mock):
@@ -287,6 +313,3 @@ def test_empty_links_handling(requests_mock):
     
     assert crawler.stats['total_links'] == 2
     assert crawler.stats['total_broken_links'] == 0  # Пустая != битая
-
-if __name__ == "__main__":
-    pass

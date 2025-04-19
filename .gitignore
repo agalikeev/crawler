@@ -1,3 +1,6 @@
+# ruff
+ruff.toml
+
 .idea
 .vscode
 # Byte-compiled / optimized / DLL files
