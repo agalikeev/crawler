@@ -19,14 +19,14 @@ class WebCrawler:
         self.file_types = ['.pdf', '.doc', '.docx']
         self.found_files = defaultdict(list)  # Храним найденные файлы по типам
         self.stats = {
-            'total_pages': 0,
-            'total_links': 0,
-            'total_internal_pages': 0,
-            'total_broken_links': 0,
-            'total_subdomains': 0,
-            'total_external_links': 0,
-            'total_unique_external_resources': 0,
-            'total_unique_file_links': defaultdict(int)
+            'total_pages': 0,  # страницы без повторов
+            'total_links': 0,  # все ссылки с повторами
+            'total_internal_pages': 0,  # количество внутренних страниц без повторов
+            'total_broken_links': 0,  # количество сломанных страниц
+            'total_subdomains': 0,  # количество поддоменов без повторов
+            'total_external_links': 0,  # количество ссылок на внешние ресурсы без повторов
+            'total_unique_external_resources': 0,  # количество уникальных внешних доменов без повторов
+            'total_unique_file_links': defaultdict(int)  # количество документов
         }
 
     def is_internal_netloc(self, netloc: str):
@@ -63,22 +63,27 @@ class WebCrawler:
             self.stats['total_external_links'] += 1
 
     def crawl(self, max_pages: int = 100):
+        session = requests.Session()
+        session.max_redirects = 5
+
         while self.to_visit and len(self.visited) < max_pages:
             url = self.to_visit.pop()
             if url in self.visited:
                 continue
 
             try:
-                response = requests.get(url, timeout=5)
+                response = session.get(url, timeout=5, allow_redirects=True)
+                final_url = response.url
+
                 if response.status_code != 200:
                     self.stats['total_broken_links'] += 1
                     continue
 
                 soup = BeautifulSoup(response.text, 'html.parser')
-                self.visited.add(url)
-                self.stats['total_pages'] += 1
+                if final_url not in self.visited:
+                    self.visited.add(final_url)
+                    self.stats['total_pages'] += 1
 
-                # Ищем все возможные ссылки
                 for tag in soup.find_all(['a', 'link', 'iframe', 'embed', 'script', 'img']):
                     link = None
                     if tag.name in ['a', 'link'] and tag.has_attr('href'):
