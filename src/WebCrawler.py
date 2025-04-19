@@ -32,16 +32,16 @@ class WebCrawler:
     def is_internal_netloc(self, netloc: str):
         return netloc == '' or netloc.endswith(self.base_domain)
 
-    def is_file_link(self, link):
+    def is_file_link(self, link: str):
         return any(link.lower().endswith(ft) for ft in self.file_types)
 
-    def get_absolute_url(self, base, link):
+    def get_absolute_url(self, base: str, link: str):
         """Преобразует относительную ссылку в абсолютную"""
         if link.startswith('http'):
             return link
         return urljoin(base, link)
 
-    def analyse_link(self, url, link):
+    def analyse_link(self, url: str, link: str):
         self.stats['total_links'] += 1
         absolute_link = self.get_absolute_url(url, link)
         parsed = urlparse(absolute_link)
@@ -114,16 +114,18 @@ class WebCrawler:
             print(f"{ext}: {count} files")
 
 
-def main(link, deep):
+def main(link: str, deep: int):
     wc = WebCrawler(link)
     wc.crawl(max_pages=deep)
     wc.print_stats()
 
 
 if __name__ == "__main__":
+    MAX_DEEP = 10_000
+
     parser = argparse.ArgumentParser(description='WebCrawler')
     parser.add_argument('link', nargs='?', help='Site link', default='https://spbu.ru/')
-    parser.add_argument('--deep', type=int, help='Search depth', default=10)
+    parser.add_argument('--deep', type=int, choices=(1, MAX_DEEP), help='Search depth', default=10)
     args = parser.parse_args()
 
     print(f"Crawling {args.link} with depth {args.deep}")
