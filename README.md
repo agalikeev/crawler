@@ -20,12 +20,12 @@ git clone https://github.com/вашusername/web-crawler.git
 cd web-crawler
 ```
 
+2. Установка зависимостей
+
+```bash
+poetry install
+```
+
 ## Запуск
 
-python crawler.py [URL] [--deep ГЛУБИНА]
-
-### Обход example.com со стандартной глубиной (10 страниц)
-python crawler.py https://example.com
-
-### Обход с указанием глубины (50 страниц)
-python crawler.py https://example.com --deep 50
+python src/crawler.py [URL] [--deep ГЛУБИНА]
