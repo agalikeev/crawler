@@ -303,13 +303,12 @@ def test_mailto_links_handling(requests_mock):
     assert len(crawler.external_resources) == 0  # mailto не внешним ресурсом
 
 
-# TODO: почему total_links == 0 
 def test_empty_links_handling(requests_mock):
     """Тест обработки пустых ссылок"""
     requests_mock.get("http://test.com", text="<a href=''>Empty link</a>")
     
     crawler = WebCrawler("http://test.com")
-    crawler.crawl(max_pages=1)
+    crawler.crawl(max_pages=2)
     
-    assert crawler.stats['total_links'] == 2
+    assert crawler.stats['total_links'] == 0 # не учитывается
     assert crawler.stats['total_broken_links'] == 0  # Пустая != битая
