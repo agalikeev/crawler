@@ -24,8 +24,8 @@ cd web-crawler
 
 python crawler.py [URL] [--deep ГЛУБИНА]
 
-# Обход example.com со стандартной глубиной (10 страниц)
+### Обход example.com со стандартной глубиной (10 страниц)
 python crawler.py https://example.com
 
-# Обход с указанием глубины (50 страниц)
+### Обход с указанием глубины (50 страниц)
 python crawler.py https://example.com --deep 50
