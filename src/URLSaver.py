@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 
 
-def save_url_to_sqlite(url: str, content: str):
+def save_url_to_sqlite(url: str, base_url: str, content: str):
     try:
         # Подключение к базе данных (файл создастся автоматически)
         conn = sqlite3.connect('urls.db')
@@ -12,13 +12,14 @@ def save_url_to_sqlite(url: str, content: str):
         cursor.execute('''CREATE TABLE IF NOT EXISTS urls
                          (id INTEGER PRIMARY KEY AUTOINCREMENT,
                           url TEXT NOT NULL,
+                          base_url TEXT NOT NULL,
                           content TEXT,
                           created_at TIMESTAMP)''')
 
         # Вставка данных
-        cursor.execute('''INSERT INTO urls (url, content, created_at)
-                          VALUES (?, ?, ?)''',
-                       (url, content, datetime.now()))
+        cursor.execute('''INSERT INTO urls (url, base_url, content, created_at)
+                          VALUES (?, ?, ?, ?)''',
+                       (url, base_url, content, datetime.now()))
 
         # Сохранение изменений
         conn.commit()

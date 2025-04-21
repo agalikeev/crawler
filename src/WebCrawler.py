@@ -79,7 +79,7 @@ class WebCrawler:
             try:
                 response = session.get(url, timeout=5, allow_redirects=True)
                 final_url = response.url
-                save_url_to_sqlite(final_url, response.content)
+                save_url_to_sqlite(final_url, response.content, self.base_url)
                 if response.status_code != 200:
                     self.stats['total_broken_links'] += 1
                     continue
