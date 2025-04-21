@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='WebCrawler')
     parser.add_argument('link', nargs='?', help='Site link', default='https://spbu.ru/')
-    parser.add_argument('--deep', type=int, choices=(1, MAX_DEEP), help='Search depth', default=10)
+    parser.add_argument('--deep', type=int, choices=range(1, MAX_DEEP), help='Search depth', default=10)
     args = parser.parse_args()
 
     print(f"Crawling {args.link} with depth {args.deep}")
