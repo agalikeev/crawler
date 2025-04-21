@@ -6,6 +6,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+from URLSaver import save_url_to_sqlite
+
 
 class WebCrawler:
     def __init__(self, base_url: str):
@@ -77,7 +79,7 @@ class WebCrawler:
             try:
                 response = session.get(url, timeout=5, allow_redirects=True)
                 final_url = response.url
-
+                save_url_to_sqlite(final_url, response.content)
                 if response.status_code != 200:
                     self.stats['total_broken_links'] += 1
                     continue
