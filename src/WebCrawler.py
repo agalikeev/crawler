@@ -71,6 +71,9 @@ class WebCrawler:
             if url in self.visited:
                 continue
 
+            if not url.startswith(('http://', 'https://')):
+                continue
+
             try:
                 response = session.get(url, timeout=5, allow_redirects=True)
                 final_url = response.url
@@ -78,8 +81,12 @@ class WebCrawler:
                 if response.status_code != 200:
                     self.stats['total_broken_links'] += 1
                     continue
-
-                soup = BeautifulSoup(response.text, 'html.parser')
+                content_type = response.headers.get('Content-Type', '').lower()
+                if 'xml' in content_type:
+                    parser = 'xml'
+                else:
+                    parser = 'html.parser'
+                soup = BeautifulSoup(response.text, features=parser)
                 if final_url not in self.visited:
                     self.visited.add(final_url)
                     self.stats['total_pages'] += 1
