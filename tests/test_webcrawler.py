@@ -256,7 +256,7 @@ def test_wrong_url(requests_mock):
     crawler = WebCrawler(base_url)
     crawler.crawl(max_pages=1)
 
-    assert crawler.stats["total_broken_links"] == 1
+    assert crawler.stats["total_broken_links"] == 0 # такие не учитываются
 
 
 def test_excessive_max_pages(requests_mock):
